@@ -6,24 +6,20 @@ import skimage.util as util
 import scipy.ndimage as ndimage
 
 
-img_stack = []
-img = ""
-
-def read_img(pic):
-    global img
-    img = util.img_as_float(io.imread(pic))
-    show_img()
+class imgED:
+    def __init__(self, pic):
+        self.img = io.imread(pic)
+   
+    def show_img(self):
+        io.imshow(self.img, "qt")
+       
+    def filter_gauss(self):
+        self.img = ndimage.gaussian_filter(self.img, 1)
     
-def show_img():
-    global img
-    io.imshow(img, "qt")
-    img = ndimage.gaussian_filter(img, 1)
-    io.imshow(img, "qt")
-    
+    def filter_prewitt(self):
+        self.img = ndimage.filters.prewitt(self.img)
+        
+    def refresh_img():
+        pass
 
-def refresh_img():
-    pass
-
-def undo_change():
-    pass
 
