@@ -1,9 +1,6 @@
-import skimage
-import skimage.data
 import skimage.io as io
-import skimage.filters as filters
-import skimage.util as util
 import scipy.ndimage as ndimage
+import numpy as np
 
 
 class imgED:
@@ -18,6 +15,12 @@ class imgED:
     
     def filter_prewitt(self):
         self.img = ndimage.filters.prewitt(self.img)
+        
+    def invert_img(self):
+        self.img = np.invert(self.img)
+    
+    def convert_greyscale(self):
+        pass
         
     def refresh_img():
         pass
