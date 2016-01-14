@@ -24,30 +24,38 @@ class imgED:
         
     def filter_uniform(self, size = 10): # needs input of size
         self.img = ndimage.filters.uniform_filter1d(self.img, size)
+        pseudoStack.stack.insert(0, self.img)
     
     def filter_prewitt(self):
         self.img = ndimage.filters.prewitt(self.img)
+        pseudoStack.stack.insert(0, self.img)
         
     def filter_sobel(self):
         self.img = ndimage.filters.sobel(self.img)
+        pseudoStack.stack.insert(0, self.img)
         
     def threshold(self):
         val = filters.threshold_otsu(self.img)
         self.img = self.img < val
+        pseudoStack.stack.insert(0, self.img)
         
     def normalize(self):
         p2, p98 = np.percentile(self.img, (2, 98))
         self.img = exposure.rescale_intensity(self.img, in_range = (p2, p98))
+        pseudoStack.stack.insert(0, self.img)
         
     def invert_img(self):
         self.img = np.invert(self.img)
-    
+        pseudoStack.stack.insert(0, self.img)
+        
     def convert_greyscale(self):
         self.img = color.rgb2grey(self.img)
+        pseudoStack.stack.insert(0, self.img)
         
     def fourier_transformation(self):
         self.img = np.fft.fft(self.img)
         self.img = np.fft.fftshift(self.img)
+        pseudoStack.stack.insert(0, self.img)
         
     def flip_vertical(self):
         self.img = np.fliplr(self.img)

@@ -19,7 +19,7 @@ class Toolbar:
     def __init__(self, master):
         
         toolFrame = Frame(master)
-        toolFrame.pack()#(row = 1, column = 1)
+        toolFrame.pack()
         
         self.openButton = Button(toolFrame, text = "open", command = self.openImg)
         self.openButton.pack()
@@ -27,9 +27,9 @@ class Toolbar:
         self.saveButton = Button(toolFrame, text = "save as", command = self.saveImg)
         self.saveButton.pack()
         
-        # how some filter button could look like
+        
         self.resizeButton = Button(toolFrame, text = "resize", command = self.resizeImg)
-        self.resizeButton.pack()#(row = 2, column = 2)
+        self.resizeButton.pack()
         
         self.test = Button(toolFrame, text = "Change frame size", command = self.test)
         self.test.pack()
@@ -46,7 +46,7 @@ class Toolbar:
         
         self.undoButton = Button(toolFrame, text = "Undo Action", command = self.undo)
         self.undoButton.pack()
-        
+        # how some filter button could look like
         self.gaussButton = Button(toolFrame, text = "Gaussian filter", command = self.gauss)
         self.gaussButton.pack()
         
@@ -56,6 +56,77 @@ class Toolbar:
         self.flipHButton = Button(toolFrame, text = "Flip (horizontal)", command = self.flip_horizon)
         self.flipHButton.pack()
         
+        self.invertButton = Button(toolFrame, text = "Invert", command = self.invert)
+        self.invertButton.pack()
+        
+        self.uniformButton = Button(toolFrame, text = "Uniform", command = self.uniform)
+        self.uniformButton.pack()
+        
+        self.prewittButton = Button(toolFrame, text = "Prewitt", command = self.prewitt) # prewitt !1!!!1!
+        self.prewittButton.pack()
+        
+        self.sobelButton = Button(toolFrame, text = "Sobel", command = self.sobel)
+        self.sobelButton.pack()
+        
+        self.thresholdButton = Button(toolFrame, text = "Threshold", command = self.threshold)
+        self.thresholdButton.pack()
+        
+        self.normalizeButton = Button(toolFrame, text = "Normalize", command = self.normalize)
+        self.normalizeButton.pack()
+        
+        self.greyscaleButton = Button(toolFrame, text = "To Greyscale", command = self.greyscale)
+        self.greyscaleButton.pack()
+        
+        self.fourierButton = Button(toolFrame, text = "Fourier", command = self.fourier)
+        self.fourierButton.pack()
+    
+    def fourier(self):
+    
+        name = sk.imgED(pseudoStack.stack[0])
+        name.fourier_transformation()
+        self.refresh()
+        
+    def greyscale(self):
+        
+        name = sk.imgED(pseudoStack.stack[0])
+        name.convert_greyscale()
+        self.refresh()
+    
+    def normalize(self):
+    
+        name = sk.imgED(pseudoStack.stack[0])
+        name.normalize()
+        self.refresh()
+    
+    def threshold(self):
+    
+        name = sk.imgED(pseudoStack.stack[0])
+        name.threshold()
+        self.refresh()
+    
+    def sobel(self):
+    
+        name = sk.imgED(pseudoStack.stack[0])
+        name.filter_sobel()
+        self.refresh()    
+        
+    def prewitt(self):
+    
+        name = sk.imgED(pseudoStack.stack[0])
+        name.filter_prewitt()
+        self.refresh()    
+    
+    def uniform(self):
+    
+        name = sk.imgED(pseudoStack.stack[0])
+        name.filter_uniform()
+        self.refresh()    
+    
+    def invert(self):
+    
+        name = sk.imgED(pseudoStack.stack[0])
+        name.invert_img()
+        self.refresh()
     
     def flip_horizon(self):
         
@@ -90,7 +161,10 @@ class Toolbar:
     def saveImg(self):
     
         path = filedialog.asksaveasfilename()
-        misc.imsave(path, pseudoStack.stack[0])
+        if path == '':
+            pass
+        else:
+            misc.imsave(path, pseudoStack.stack[0])
         
     def openImg(self):
         
