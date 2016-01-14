@@ -1,12 +1,12 @@
 import skimage.io as io
 import skimage.color as color
-import skimage.filters as filters
+import skimage.filter as filters
 from skimage import exposure
 import scipy.ndimage as ndimage
 import scipy.misc as misc
 from scipy import fftpack
 import numpy as np
-
+import pseudoStack
 
 class imgED:
     def __init__(self, pic):
@@ -20,6 +20,7 @@ class imgED:
        
     def filter_gauss(self):
         self.img = ndimage.gaussian_filter(self.img, 1)
+        pseudoStack.stack.insert(0, self.img) 
         
     def filter_uniform(self, size = 10): # needs input of size
         self.img = ndimage.filters.uniform_filter1d(self.img, size)
@@ -50,10 +51,11 @@ class imgED:
         
     def flip_vertical(self):
         self.img = np.fliplr(self.img)
+        pseudoStack.stack.insert(0, self.img) 
         
     def flip_horizontal(self):
         self.img = np.flipud(self.img)
-        
+        pseudoStack.stack.insert(0, self.img)
     
         
     def refresh_img():

@@ -3,8 +3,10 @@ from tkinter import filedialog
 from scipy import misc
 import PIL
 from PIL import ImageTk
+import sk
+import pseudoStack
 
-pseudoStack = [] # <-- Stack!&%"&$"!"§$
+#pseudoStack = [] # <-- Stack!&%"&$"!"§$
 
 
 # not DAU approved, so care about input
@@ -20,7 +22,10 @@ class Toolbar:
         toolFrame.pack()#(row = 1, column = 1)
         
         self.openButton = Button(toolFrame, text = "open", command = self.openImg)
-        self.openButton.pack()#(row = 2, column = 2)
+        self.openButton.pack()
+        
+        self.saveButton = Button(toolFrame, text = "save as", command = self.saveImg)
+        self.saveButton.pack()
         
         # how some filter button could look like
         self.resizeButton = Button(toolFrame, text = "resize", command = self.resizeImg)
@@ -42,26 +47,57 @@ class Toolbar:
         self.undoButton = Button(toolFrame, text = "Undo Action", command = self.undo)
         self.undoButton.pack()
         
+        self.gaussButton = Button(toolFrame, text = "Gaussian filter", command = self.gauss)
+        self.gaussButton.pack()
+        
+        self.flipVButton = Button(toolFrame, text = "Flip (vert)", command = self.flip_vertical)
+        self.flipVButton.pack()
+        
+        self.flipHButton = Button(toolFrame, text = "Flip (horizontal)", command = self.flip_horizon)
+        self.flipHButton.pack()
+        
     
+    def flip_horizon(self):
+        
+        name = sk.imgED(pseudoStack.stack[0])
+        name.flip_horizontal()
+        self.refresh()    
+    
+    def flip_vertical(self):
+        
+        name = sk.imgED(pseudoStack.stack[0])
+        name.flip_vertical()
+        self.refresh()
+    
+    def gauss(self):
+        
+        name = sk.imgED(pseudoStack.stack[0])
+        name.filter_gauss()
+        self.refresh()
     # the filter button example       
     def resizeImg(self):
         x = int(self.x_resize.get())
         y = int(self.y_resize.get())
-        imgResized = misc.imresize(pseudoStack[0], (x,y), interp = 'cubic')
-        pseudoStack.insert(0, imgResized)
+        imgResized = misc.imresize(pseudoStack.stack[0], (x,y), interp = 'cubic')
+        pseudoStack.stack.insert(0, imgResized)
         self.refresh()
     
     def test(self):
         x = self.x_resize.get()
         y = self.y_resize.get()
         self.imageWindow.geometry(x + "x" + y)
-                
+    
+    def saveImg(self):
+    
+        path = filedialog.asksaveasfilename()
+        misc.imsave(path, pseudoStack.stack[0])
+        
     def openImg(self):
         
         
         imgPath = filedialog.askopenfile()
         asArray = misc.imread(imgPath.name)
-        pseudoStack.insert(0, asArray)
+        pseudoStack.stack.insert(0, asArray)
         asPIL = PIL.Image.fromarray(asArray)
         
         self.imageWindow = Toplevel()
@@ -72,7 +108,7 @@ class Toolbar:
              
    
     def undo(self):
-        pseudoStack.pop(0)
+        pseudoStack.stack.pop(0)
         self.refresh()
     
         
@@ -83,7 +119,7 @@ class Toolbar:
         self.imageWindow.root.update()
     
     def convert(self):
-        asPIL = PIL.Image.fromarray(pseudoStack[0])
+        asPIL = PIL.Image.fromarray(pseudoStack.stack[0])
         forTk = ImageTk.PhotoImage(asPIL)
         return forTk
 
