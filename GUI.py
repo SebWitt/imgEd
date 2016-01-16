@@ -1,13 +1,14 @@
 from tkinter import *
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 from scipy import misc, ndimage
 import PIL
-from PIL import ImageTk
+from PIL import ImageTk, Image
 import sk
 import pseudoStack
 import tempfile
 import numpy as np
 from matplotlib import pyplot as plt
+from matplotlib import image
 from skimage import io
 """This module implements a rudimentary image processing tool."""
 ###############################################################################
@@ -112,22 +113,31 @@ class Toolbar():
         
         
         ######------- Labels, entry widgets, checkbuttons -------##############
-        self.x_resize = Entry(toolFrame, width = "5")
-        self.x_resize.grid(row = 2, column = 0, sticky = "w")
         
-        self.y_resize = Entry(toolFrame, width = "5")
-        self.y_resize.grid(row = 2, column = 0)
+        self.width_resize = Entry(toolFrame, width = "5")
+        self.width_resize.grid(row = 2, column = 0)
         
-        self.ratio_x = Checkbutton(toolFrame,\
-         variable = self.x_true).grid(row = 4, column = 0, sticky = "w")
+        self.height_resize = Entry(toolFrame, width = "5")
+        self.height_resize.grid(row = 3, column = 0)
+        
+        
         self.ratio_y = Checkbutton(toolFrame,\
-         variable = self.y_true).grid(row = 4, column = 0)
-          
-        self.resizeLabelX = Label(toolFrame, text = "x ")
-        self.resizeLabelX.grid(row = 3, column = 0, sticky = "w")
+         variable = self.y_true).grid(row = 2, column = 0, sticky = "e")
+        self.ratio_x = Checkbutton(toolFrame,\
+         variable = self.x_true).grid(row = 3, column = 0, sticky = "e")
         
-        self.resizeLabelY = Label(toolFrame, text = "y ")       
-        self.resizeLabelY.grid(row = 3, column = 0)
+        self.labelWidth = Label(toolFrame, text = "Width")       
+        self.labelWidth.grid(row = 2, column = 0, sticky = "w")
+         
+        self.labelHeight = Label(toolFrame, text = "Height")
+        self.labelHeight.grid(row = 3, column = 0, sticky = "w")
+        
+        
+        
+        self.labelInfoScale = Label(toolFrame, text = "To scale \
+in\ndependency\nof width or height,\njust check the\ncheckbox.\nBoth\
+ checked is the\nsame like\nboth unchecked.", justify=LEFT)
+        self.labelInfoScale.grid(row = 4, column = 0)
         
         self.histBinsLabel = Label(toolFrame, text = "bins")
         self.histBinsLabel.grid(row = 18, column = 0, sticky = "w")
@@ -231,27 +241,52 @@ class Toolbar():
         name = sk.imgED(pseudoStack.stack[0])
         name.filter_gauss()
         self.refresh()
-    # the filter button example       
+     
     def resizeImg(self):
         
 ###############################################################################        
-        x = int(self.x_resize.get())
-        y = int(self.y_resize.get())
-        if self.x_true.get() == True and self.y_true.get() == False:
-            percentX = int(self.imgWidth * (x / 100))
+       
+        if self.x_true.get() == False and self.y_true.get() == True:
+            if self.width_resize.get() == ''\
+             or str.isdigit(self.width_resize.get()) == False:
+                var = messagebox.showinfo("Not a Number" ,\
+                 "Please type in a number")
+                return   
+            width = int(self.width_resize.get())
+            factor = 1 / (self.imgWidth / width)
+            newHeight = int(self.imgHeight * factor)
             imgResized = misc.imresize(pseudoStack.stack[0],\
-             int(percentX), interp = 'bilinear')    
+             (newHeight, width), interp = 'bilinear')   
             pseudoStack.stack.insert(0, imgResized)
-        elif self.x_true.get() == False and self.y_true.get() == True:
-            percentY = int(self.imgWidth * (x / 100))
+        elif self.x_true.get() == True and self.y_true.get() == False:
+            if self.height_resize.get() == '' or\
+             str.isdigit(self.height_resize.get()) == False:
+                var = messagebox.showinfo("Not a Number" ,\
+                 "Please type in a number")
+                return
+            height = int(self.height_resize.get())
+            factor = 1 / (self.imgHeight / height)
+            newWidth = int(self.imgWidth * factor)
             imgResized = misc.imresize(pseudoStack.stack[0],\
-             int(percentY), interp = 'bilinear')
+             (height, newWidth), interp = 'bilinear')
             pseudoStack.stack.insert(0, imgResized)
         else:
+            if self.height_resize.get() == '' or\
+             self.width_resize.get() == '' or\
+              str.isdigit(self.width_resize.get()) == False or\
+               str.isdigit(self.height_resize.get()) == False:
+                var = messagebox.showinfo("Not a Number" ,\
+                 "Please type in a number")
+                return
+            height = int(self.height_resize.get())
+            width = int(self.width_resize.get())
             imgResized = misc.imresize(pseudoStack.stack[0],\
-             (x,y), interp = 'bilinear') 
+             (height,width), interp = 'bilinear') 
             pseudoStack.stack.insert(0, imgResized)
-        
+            
+        asPIL = PIL.Image.fromarray(imgResized)
+        self.imgWidth = asPIL.size[0]
+        self.imgHeight = asPIL.size[1]
         #self.chFrame()
         self.refresh()
         
@@ -263,21 +298,16 @@ class Toolbar():
         self.imageWindow.geometry(x + "x" + y)
         self.imageWindow.deiconify()
     
-    def saveImg(self):
     
-        path = filedialog.asksaveasfilename()
-        if path == '':
-            pass
-        else:
-            misc.imsave(path, pseudoStack.stack[0])
 ###############################################################################        
     def openImg(self):
         
-       
-        imgPath = filedialog.askopenfile()
+        imgPath = filedialog.askopenfile(filetypes =\
+         (("Jpegs", "*.jpg *.jpeg"),("Bitmaps", "*.bmp"), \
+         ("Tiff", "*.tiff *.tif"), ("PNG", "*.png"),("all files", "*.*")))
         self.suffix = imgPath.name.split('.')
         self.suffix = self.suffix.pop()
-        asArray = ndimage.imread(imgPath.name)
+        asArray = io.imread(imgPath.name)
         pseudoStack.stack.insert(0, asArray)
         asPIL = PIL.Image.fromarray(asArray)
         self.imgWidth = asPIL.size[0]
@@ -287,7 +317,7 @@ class Toolbar():
         
         self.imageWindow = Toplevel()
         self.imageWindow.title("..." + imgPath.name[-10:])
-        self.imageWindow.protocol("WM_DELETE_WINDOW", start.switchBtn)
+        self.imageWindow.protocol("WM_DELETE_WINDOW", start.clearStack)
         self.saveButton.grid(row = 0, column = 0, sticky = None)
         self.imageWindow.geometry(imgWinPos)
         forTk = ImageTk.PhotoImage(asPIL)
@@ -295,7 +325,16 @@ class Toolbar():
         self.image.grid()
         self.imageWindow.root.update()  
              
-   
+    def saveImg(self):
+    
+        path = filedialog.asksaveasfilename()
+        if path == '':
+            pass
+        
+        else:
+            misc.imsave(path, pseudoStack.stack[0])
+    
+    
     def undo(self):
         print(len(pseudoStack.stack))
         
@@ -317,20 +356,23 @@ class Toolbar():
         if self.fourierCheck == True:
             io.imsave(self.tempDir.name\
          + "temp." + self.suffix, pseudoStack.stack[0]) 
+            pseudoStack.stack.pop(0)
+            pseudoStack.stack.insert(0,\
+             plt.imread(self.tempDir.name + "temp." + self.suffix))
             self.fourierCheck = False
         else:
             misc.imsave(self.tempDir.name\
          + "temp." + self.suffix, pseudoStack.stack[0]) 
         
         lame = io.imread(self.tempDir.name + "temp." + self.suffix)
-        #pseudoStack.stack.insert(0, lame)
         asPIL = PIL.Image.fromarray(lame)
         forTk = ImageTk.PhotoImage(asPIL)
         
         return forTk
     
-    def switchBtn(self):
+    def clearStack(self):
         
+        pseudoStack.stack = []
         self.saveButton.grid_forget()
         self.imageWindow.destroy()
 
@@ -339,7 +381,7 @@ class Toolbar():
 root = Tk()
 start = Toolbar(root)
 w = 131 # width for the Tk root
-h = 600 # height for the Tk root
+h = 670 # height for the Tk root
 
 
 # calculate x and y coordinates for the Tk root window
