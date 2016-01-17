@@ -53,8 +53,7 @@ class imgED:
         pseudoStack.stack.insert(0, self.img)
         
     def fourier_transformation(self):
-        self.img = np.fft.fft(self.img)
-        self.img = np.fft.fftshift(self.img)
+        self.img = np.fft.fftshift(self.img, 2)
         pseudoStack.stack.insert(0, self.img)
         
     def flip_vertical(self):
